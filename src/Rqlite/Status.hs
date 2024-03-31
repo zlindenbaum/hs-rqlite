@@ -16,6 +16,8 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.HashMap.Strict as M
 import           GHC.Generics
 import           Network.HTTP hiding (host)
+import qualified Data.Aeson.Key as Key
+import qualified Data.Aeson.KeyMap as KeyMap
 
 import           Rqlite
 
@@ -59,7 +61,7 @@ instance FromJSON RQStatus where
         pth <- store .: "dir"
         ldr <- store .: "leader"
         let mLeader = if ldr == "" then Nothing else Just ldr
-        prs :: [String] <- case M.lookup "peers" store of
+        prs :: [String] <- case KeyMap.lookup (Key.fromText "peers") store of
             Just Null -> throw $ UnexpectedResponse $ concat
                 [ "peers were empty while querying status! This probably indicates that the node path "
                 , pth
