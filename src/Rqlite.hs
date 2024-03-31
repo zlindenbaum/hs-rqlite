@@ -25,6 +25,7 @@ import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as Char8
 import           Data.Scientific
 import           Data.Typeable
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.HashMap.Strict as M
 import           GHC.Generics
 import           GHC.IO.Exception
@@ -39,7 +40,7 @@ data RQResult a =
 instance FromJSON a => FromJSON (RQResult a) where
     parseJSON j = do
         Object o <- parseJSON j
-        case M.toList (o :: Object) of
+        case KeyMap.toList (o :: Object) of
             [("results", x)] -> do
                 ls <- parseJSON x
                 return $ RQResults ls
@@ -59,7 +60,7 @@ data PostResult
 instance FromJSON PostResult where
     parseJSON j = do
         Object o <- parseJSON j
-        case M.toList (o :: Object) of
+        case KeyMap.toList (o :: Object) of
             [("rows_affected", _), ("last_insert_id", Number n)] ->
                 return $ PostResult $ base10Exponent n
             [("last_insert_id", Number n)] -> -- this happens when deleting
@@ -133,7 +134,7 @@ data Level = None | Weak | Strong
 instance FromJSON a => FromJSON (GetResult a) where
     parseJSON j = do
         Object o <- parseJSON j
-        case M.toList (o :: Object) of
+        case KeyMap.toList (o :: Object) of
             [("values", v), ("types", _), ("columns", _)] ->
                 GetResult <$> parseJSON v
             [("types", _), ("columns", _)] ->
